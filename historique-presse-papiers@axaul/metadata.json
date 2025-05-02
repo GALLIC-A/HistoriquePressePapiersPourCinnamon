@@ -1,0 +1,7 @@
+{
+    "uuid": "historique-presse-papiers@axaul",
+    "name": "Historique du presse-papiers",
+    "description": "Utilitaire pour accéder à des éléments anciennement copiés.",
+    "icon": "force-exit",
+    "max-instances": 1
+}
