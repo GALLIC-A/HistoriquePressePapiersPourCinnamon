@@ -1,0 +1,12 @@
+{
+  "section1": {
+    "type": "section",
+    "description": "Menu"
+  },
+  "keyOpen": {
+    "type": "keybinding",
+    "description": "Afficher le menu",
+    "default": "<Shift><Super>v",
+    "tooltip": "Définir les raccourcis clavier pour afficher le menu de l'applet historique du presse-papiers."
+  }
+}
