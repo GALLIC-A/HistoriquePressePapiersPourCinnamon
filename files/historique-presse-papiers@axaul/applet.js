@@ -76,10 +76,7 @@ HistoriquePressePapiers.prototype = {
         this.menuItems = [];
 
         this.historiquePressePapiers.forEach(contenu => {
-            let item = new PopupMenu.PopupMenuItem(contenu);
-            item.connect('activate', () => {
-                Main.notify("Contenu cliqué :", contenu);
-            });
+            let item = this.creerBoutonContenuPressePapiers(contenu);
             this.sectionHistorique.addMenuItem(item);
             this.menuItems.push(item);
         });
@@ -105,34 +102,31 @@ HistoriquePressePapiers.prototype = {
             // on stocke le contenu complet dans l'historique
             this.historiquePressePapiers.push(contenu);
             
-            let contenuAffiche = contenu;
-            if(contenu.length > MAX_TAILLE_CONTENU) {
-                contenuAffiche = contenu.substring(0, MAX_TAILLE_CONTENU - 3) + "...";
-            }
+            let item = this.creerBoutonContenuPressePapiers(contenu);
 
-            let item = new PopupMenu.PopupMenuItem(contenuAffiche);
-            item.connect('activate', () => {
-                this.copierDansPressePapiers(contenu);
-                Main.notify(`"${contenuAffiche}" copié dans le presse-papiers.`);
-            });
             this.sectionHistorique.addMenuItem(item);
             this.menuItems.push(item);
-            global.log(`"${contenuAffiche}" a été ajouté à l'historique du presse-papiers.`);
         } catch(ex) {
             global.log(`Une erreur est survenue lors de l'ajout du contenu à l'historique du presse-papiers : ${ex}`);
         }
     },
 
-    verifierHistorique: function(dernierContenu, contenu) {
-        // Vérifier si le contenu donné en argument
-        // est déjà présent dans l'historique ou pas.
-        // S'il est déjà présent, il ne faut pas l'ajouter, masi le faire remonter dans la liste pour qu'il apparaîsse de nouveau en premier, PUIS on retourne TRUE
-        // Sinon s'il n'est pas déjà présent, on l'ajoute et on retourne TRUE
-        // Sinon c'est que le texte est probablement null ou vide, dans ce cas on retourne simplement FALSE.
-    
-        // En attendant que tout ce qui est décrit juste au dessus soit mis en place,
-        // je me base juste sur le "denrierContenu", qui sera retiré plus tard.
-        return contenu && contenu !== dernierContenu;
+    actualiserContenuDeLHistorique: function(contenu) {
+        // Cette fonction a pour but de faire passer l'élément sélectionner pour être copié en tête de la liste.
+        // D'abord on supprime l'occurrence existante, on la réinsère en haut de la liste, puis on recharge l'historique.
+        this.historiquePressePapiers = this.historiquePressePapiers.filter(c => c !== contenu);
+        this.historiquePressePapiers.unshift(contenu);
+        this.rechargerHistorique();
+    },
+
+    gererContenu: function(contenu) {
+        if(! (contenu === null || contenu.trim() === "") ) {
+            if(this.historiquePressePapiers.includes(contenu)) {
+                this.actualiserContenuDeLHistorique(contenu);
+            } else {
+                this.ajouterContenuAHistoriqueDuPressePapiers(contenu);
+            }
+        }
     },
 
     demarrerSurveillancePressePapiers: function() {
@@ -141,10 +135,10 @@ HistoriquePressePapiers.prototype = {
         const verifierPressePapiers = () => {
             let pressePapiers = St.Clipboard.get_default();
             pressePapiers.get_text(St.ClipboardType.CLIPBOARD, (clip, contenu) => {
-                if(this.verifierHistorique(dernierContenu, contenu)) {
+                if(contenu && contenu !== dernierContenu) {
                     global.log(`Nouveau contenu détecté dans le presse-papiers : "${contenu}"`);
                     dernierContenu = contenu;
-                    this.ajouterContenuAHistoriqueDuPressePapiers(contenu);
+                    this.gererContenu(contenu);
                 } else {
                     global.log(`Le contenu du presse-papiers n'a pas changé depuis ces 5 dernières secondes.`);
                 }
@@ -159,7 +153,22 @@ HistoriquePressePapiers.prototype = {
     copierDansPressePapiers: function(contenu) {
         let pressePapiers = St.Clipboard.get_default();
         pressePapiers.set_text(St.ClipboardType.CLIPBOARD, contenu);
-    }
+    },
+
+    creerBoutonContenuPressePapiers: function(contenu) {
+        let contenuAffiche = contenu;
+        if(contenu.length > MAX_TAILLE_CONTENU) {
+            contenuAffiche = contenu.substring(0, MAX_TAILLE_CONTENU - 3) + "...";
+        }
+
+        let item = new PopupMenu.PopupMenuItem(contenuAffiche);
+        item.connect('activate', () => {
+            this.copierDansPressePapiers(contenu);
+            Main.notify(`"${contenuAffiche}" copié dans le presse-papiers.`);
+        });
+
+        return item;
+    },
 };
 
 // ********* MAIN **********
