@@ -108,8 +108,7 @@ HistoriquePressePapiers.prototype = {
             this.historiquePressePapiers.unshift(contenu);
             
             let item = this.creerBoutonContenuPressePapiers(contenu);
-
-            this.sectionHistorique.addMenuItem(item);
+            
             this.rechargerHistorique();
         } catch(ex) {
             global.log(`Une erreur est survenue lors de l'ajout du contenu à l'historique du presse-papiers : ${ex}`);
