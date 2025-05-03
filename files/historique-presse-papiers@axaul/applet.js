@@ -2,12 +2,54 @@ const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const St = imports.gi.St;
+const Mainloop = imports.mainloop;
 const AppletDir = imports.ui.appletManager.appletMeta['historique-presse-papiers@axaul'].path;
 
 const ENABLE_DEBUG = true;
 
 function HistoriquePressePapiers(orientation) {
     this._init(orientation);
+}
+
+function verifierHistorique(dernierContenu, contenu) {
+    // Vérifier si le contenu donné en argument
+    // est déjà présent dans l'historique ou pas.
+    // S'il est déjà présent, il ne faut pas l'ajouter, masi le faire remonter dans la liste pour qu'il apparaîsse de nouveau en premier, PUIS on retourne TRUE
+    // Sinon s'il n'est pas déjà présent, on l'ajoute et on retourne TRUE
+    // Sinon c'est que le texte est probablement null ou vide, dans ce cas on retourne simplement FALSE.
+
+    // En attendant que tout ce qui est décrit juste au dessus soit mis en place,
+    // je me base juste sur le "denrierContenu", qui sera retiré plus tard.
+    return contenu && contenu !== dernierContenu;
+}
+
+function ajouterContenuAHistoriqueDuPressePapiers(contenu) {
+    global.log(`"${contenu}" a été ajouté à l'historique du presse-papiers.`);
+}
+
+function demarrerSurveillancePressePapiers() {
+    let dernierContenu = "";
+
+    function verifierPressePapiers() {
+        let pressePapiers = St.Clipboard.get_default();
+        pressePapiers.get_text(St.ClipboardType.CLIPBOARD, (clip, contenu) => {
+            if(verifierHistorique(dernierContenu, contenu)) {
+                global.log(`Nouveau contenu détecté dans le presse-papiers : "${contenu}"`);
+                dernierContenu = contenu;
+                ajouterContenuAHistoriqueDuPressePapiers(contenu);
+            } else {
+                global.log(`Le contenu du presse-papiers n'a pas changé depuis ces 5 dernières secondes.`);
+            }
+            
+            Mainloop.timeout_add_seconds(5, verifierPressePapiers);
+        });
+
+        return false; // get_text est visiblement asynchrone, donc si on retourne "true" on dit qu'on veut continuer la boucle toutes les X secondes
+        // mais si get_text n'a pas terminé son travail, ça ne va pas fonctionner correctement.
+    }
+
+    global.log("Démarrage de la boucle de surveillance du presse-papiers.");
+    verifierPressePapiers();
 }
 
 HistoriquePressePapiers.prototype = {
@@ -40,24 +82,10 @@ HistoriquePressePapiers.prototype = {
             Main.notify("Alt+F2, lg pour voir les logs des applets.");
         });
 
-        // [DEV] Création du bouton "récupérer contenu actuel du presse-papiers"
-        this.boutonGetClipboardContent = new PopupMenu.PopupMenuItem("Récupérer contenu actuel du presse-papiers");
-        this.boutonGetClipboardContent.connect('activate', () => {
-            global.log("Bouton du clipboard cliqué");
-            
-            let clipboard = St.Clipboard.get_default();
-            clipboard.get_text(St.ClipboardType.CLIPBOARD, (clip, text) => {
-                if(text){
-                    global.log(`Le presse-papiers contient actuellement : "${text}"`);
-                } else global.log("Le presse-papiers est vide, ou inaccessible");
-            });
-        });
-
         // Ajout des boutons au menu
         this.menu.addMenuItem(this.boutonEffacerTout);
         if(ENABLE_DEBUG){
             this.menu.addMenuItem(this.boutonDebogage);
-            this.menu.addMenuItem(this.boutonGetClipboardContent);
         }
 
         // Séparation des boutons du menu avec autres commandes due mnu
@@ -110,5 +138,6 @@ HistoriquePressePapiers.prototype = {
 // ********* MAIN **********
 
 function main(metadata, orientation) {
+    demarrerSurveillancePressePapiers();
     return new HistoriquePressePapiers(orientation);
 }
