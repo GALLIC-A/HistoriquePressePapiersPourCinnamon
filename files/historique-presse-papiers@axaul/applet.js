@@ -1,15 +1,9 @@
 const Applet = imports.ui.applet;
-const Util = imports.misc.util;
+const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const AppletDir = imports.ui.appletManager.appletMeta['historique-presse-papiers@axaul'].path;
-const PopupMenu = imports.ui.popupMenu;
-const St = imports.gi.St;
-const Clutter = imports.gi.Clutter;
 
-const UUID = "historique-presse-papiers@axaul";
-const NOMBRE_MAXIMAL_ELEMENTS = 15;
-
-// ********************** //
+const ENABLE_DEBUG = true;
 
 function HistoriquePressePapiers(orientation) {
     this._init(orientation);
@@ -20,59 +14,82 @@ HistoriquePressePapiers.prototype = {
 
     _init: function(orientation) {
         Applet.IconApplet.prototype._init.call(this, orientation);
-
         this.set_applet_icon_path(AppletDir + '/icon.png');
         this.set_applet_tooltip("Ouvrir l'historique du presse-papiers");
 
-        // Ajout de la partie IHM
         this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.menu = new Applet.AppletPopupMenu(this,orientation);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        // Initialise une liste d'éléments du presse-papiers vide
-        // (bon là ils ne sont pas vides, mais c'est pour les tests)
-        this.historiquePressePapiers = [
-            "Contenu du presse-papiers 1",
-            "Contenu du presse-papiers 2",
-            "Bien le bonjour"
-        ];
+        // Historique fictif pour les tests
+        this.historiquePressePapiers = ["Contenu 1", "Contenu 2", "Bonjour"];
         this.menuItems = [];
 
-        let boutonEffacerTout = new PopupMenu.PopupMenuItem("🗑️ Vider tout l'historique");
-        boutonEffacerTout.connect('activate', () => {
-            Main.notify("Votre presse-papiers a été vidé !");
+        // Ajout du bouton "effacer tout"
+        this.boutonEffacerTout = new PopupMenu.PopupMenuItem("🗑️ Vider tout l'historique");
+        this.boutonEffacerTout.connect('activate', () => {
             this.effacerHistorique();
+            Main.notify("Historique vidé !");
         });
-        this.menu.addMenuItem(boutonEffacerTout);
 
-        // Ajout d'un séparateur
+        // Ajout du bouton debug
+        this.boutonDebogage = new PopupMenu.PopupMenuItem("⚙ Débogage");
+        this.boutonDebogage.connect('activate', () => {
+            this.afficherDebogage();
+            Main.notify("Alt+F2, lg pour voir les logs des applets.");
+        });
+
+        // Ajout des boutons au menu
+        this.menu.addMenuItem(this.boutonEffacerTout);
+        if(ENABLE_DEBUG){
+            this.menu.addMenuItem(this.boutonDebogage);
+        }
+
+        // Séparation des boutons du menu avec autres commandes due mnu
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        this.afficherHistorique();
+        // Section dynamique (contenant l'historique du presse-papiers)
+        this.sectionHistorique = new PopupMenu.PopupMenuSection();
+        this.menu.addMenuItem(this.sectionHistorique);
+
+        this.rechargerHistorique();
     },
 
     on_applet_clicked: function() {
         this.menu.toggle();
     },
 
-    afficherHistorique: function() {
+    rechargerHistorique: function() {
+        // On nettoie la section d'historique UNIQUEMENT !
+        this.sectionHistorique.removeAll();
+
+        // Puis on ajoute les éléments
+        this.menuItems = [];
+
         this.historiquePressePapiers.forEach(contenu => {
             let item = new PopupMenu.PopupMenuItem(contenu);
             item.connect('activate', () => {
-                Main.notify(`Contenu cliqué : ${contenu}`);
+                Main.notify("Contenu cliqué :", contenu);
             });
-            this.menu.addMenuItem(item);
+            this.sectionHistorique.addMenuItem(item);
             this.menuItems.push(item);
         });
     },
 
     effacerHistorique: function() {
-        this.menuItems.forEach(item => {
-            this.menu.removeMenuItem(item);
-        });
-        this.menuItems = [];
+        global.log("Le presse-papiers a été vidé.");
+
+        // Reset des données puis rafraîchissement de l'ihm
         this.historiquePressePapiers = [];
-    }
+        this.rechargerHistorique();
+    },
+
+    afficherDebogage: function() {
+        global.log("===== ⚙ Informations de débogage ⚙ =====");
+        global.log(`Nombre d'éléments contenus dans le presse-papiers : ${this.historiquePressePapiers.length}`);
+        global.log(`Nombre d'éléments affichés dans le menu : ${this.menuItems.length}`);
+        global.log("=========================================");
+    },
 };
 
 // ********* MAIN **********
