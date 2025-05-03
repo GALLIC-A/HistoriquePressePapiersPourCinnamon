@@ -3,7 +3,9 @@ const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const St = imports.gi.St;
 const Mainloop = imports.mainloop;
-const AppletDir = imports.ui.appletManager.appletMeta['historique-presse-papiers@axaul'].path;
+const UUID = "historique-presse-papiers@axaul";
+const AppletDir = imports.ui.appletManager.appletMeta[UUID].path;
+const Settings = imports.ui.settings;
 
 // Variables paramétrables
 const ENABLE_DEBUG = true;
@@ -13,17 +15,35 @@ const INTERVALE_VERIFICATION_PRESSE_PAPIERS_EN_SECONDES = 5;
 // Variables fixes
 const MAX_TAILLE_CONTENU = 100;
 
-function HistoriquePressePapiers(orientation) {
-    this._init(orientation);
+function HistoriquePressePapiers(metadata, orientation, panelHeight, instanceId) {
+    this._init(metadata, orientation, panelHeight, instanceId);
 }
 
 HistoriquePressePapiers.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {
-        Applet.IconApplet.prototype._init.call(this, orientation);
+    _init: function(metadata, orientation, panelHeight, instanceId) {
+        Applet.IconApplet.prototype._init.call(this, orientation, panelHeight, instanceId);
+
+        this._preferences = {};
+
         this.set_applet_icon_path(AppletDir + '/icon.png');
         this.set_applet_tooltip("Ouvrir l'historique du presse-papiers");
+
+        // chargement des paramètres
+        this.settings = new Settings.AppletSettings(this._preferences, UUID, instanceId);
+
+        // liaison des propriétés aux préférences this._preferences.propriete
+        this.settings.bindProperty(
+            Settings.BindingDirection.IN,
+            "debug_mode", // Clé du settings-schema.json
+            "debug_mode", // Propriété de _preferences
+            this.on_settings_changed.bind(this), // callback
+            null
+        );
+
+        // Utilise la valeur initiale
+        this._updateDebug();
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -66,6 +86,20 @@ HistoriquePressePapiers.prototype = {
 
     on_applet_clicked: function() {
         this.menu.toggle();
+    },
+
+    on_settings_changed: function() {
+        this._updateDebug()
+    },
+
+    _updateDebug: function() {
+        // On utilise la valeur dynamique
+        if(this._preferences.debug_mode){
+            global.log("Débogage activé");
+        } else 
+        {
+            global.log("Débogage désactivé");
+        }
     },
 
     rechargerHistorique: function() {
@@ -177,6 +211,6 @@ HistoriquePressePapiers.prototype = {
 
 // ********* MAIN **********
 
-function main(metadata, orientation) {
-    return new HistoriquePressePapiers(orientation);
+function main(metadata, orientation, panelHeight, instanceId) {
+    return new HistoriquePressePapiers(metadata, orientation, panelHeight, instanceId);
 }

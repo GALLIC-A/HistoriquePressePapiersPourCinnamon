@@ -1,0 +1,7 @@
+{
+    "debug_mode": {
+        "type": "switch",
+        "default": false,
+        "description": "Activer le mode debug"
+    }
+}
