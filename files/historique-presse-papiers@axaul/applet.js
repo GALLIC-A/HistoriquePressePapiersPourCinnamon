@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
+const St = imports.gi.St;
 const AppletDir = imports.ui.appletManager.appletMeta['historique-presse-papiers@axaul'].path;
 
 const ENABLE_DEBUG = true;
@@ -25,24 +26,38 @@ HistoriquePressePapiers.prototype = {
         this.historiquePressePapiers = ["Contenu 1", "Contenu 2", "Bonjour"];
         this.menuItems = [];
 
-        // Ajout du bouton "effacer tout"
+        // Création du bouton "effacer tout"
         this.boutonEffacerTout = new PopupMenu.PopupMenuItem("🗑️ Vider tout l'historique");
         this.boutonEffacerTout.connect('activate', () => {
             this.effacerHistorique();
             Main.notify("Historique vidé !");
         });
 
-        // Ajout du bouton debug
+        // [DEV] Création du bouton de débogage
         this.boutonDebogage = new PopupMenu.PopupMenuItem("⚙ Débogage");
         this.boutonDebogage.connect('activate', () => {
             this.afficherDebogage();
             Main.notify("Alt+F2, lg pour voir les logs des applets.");
         });
 
+        // [DEV] Création du bouton "récupérer contenu actuel du presse-papiers"
+        this.boutonGetClipboardContent = new PopupMenu.PopupMenuItem("Récupérer contenu actuel du presse-papiers");
+        this.boutonGetClipboardContent.connect('activate', () => {
+            global.log("Bouton du clipboard cliqué");
+            
+            let clipboard = St.Clipboard.get_default();
+            clipboard.get_text(St.ClipboardType.CLIPBOARD, (clip, text) => {
+                if(text){
+                    global.log(`Le presse-papiers contient actuellement : "${text}"`);
+                } else global.log("Le presse-papiers est vide, ou inaccessible");
+            });
+        });
+
         // Ajout des boutons au menu
         this.menu.addMenuItem(this.boutonEffacerTout);
         if(ENABLE_DEBUG){
             this.menu.addMenuItem(this.boutonDebogage);
+            this.menu.addMenuItem(this.boutonGetClipboardContent);
         }
 
         // Séparation des boutons du menu avec autres commandes due mnu
