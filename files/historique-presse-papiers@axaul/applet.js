@@ -5,51 +5,16 @@ const St = imports.gi.St;
 const Mainloop = imports.mainloop;
 const AppletDir = imports.ui.appletManager.appletMeta['historique-presse-papiers@axaul'].path;
 
+// Variables paramétrables
 const ENABLE_DEBUG = true;
+const LIMITE_NOMBRE_ELEMENTS_DANS_HISTORIQUE = 15;
+const INTERVALE_VERIFICATION_PRESSE_PAPIERS_EN_SECONDES = 5;
+
+// Variables fixes
+const MAX_TAILLE_CONTENU = 100;
 
 function HistoriquePressePapiers(orientation) {
     this._init(orientation);
-}
-
-function verifierHistorique(dernierContenu, contenu) {
-    // Vérifier si le contenu donné en argument
-    // est déjà présent dans l'historique ou pas.
-    // S'il est déjà présent, il ne faut pas l'ajouter, masi le faire remonter dans la liste pour qu'il apparaîsse de nouveau en premier, PUIS on retourne TRUE
-    // Sinon s'il n'est pas déjà présent, on l'ajoute et on retourne TRUE
-    // Sinon c'est que le texte est probablement null ou vide, dans ce cas on retourne simplement FALSE.
-
-    // En attendant que tout ce qui est décrit juste au dessus soit mis en place,
-    // je me base juste sur le "denrierContenu", qui sera retiré plus tard.
-    return contenu && contenu !== dernierContenu;
-}
-
-function ajouterContenuAHistoriqueDuPressePapiers(contenu) {
-    global.log(`"${contenu}" a été ajouté à l'historique du presse-papiers.`);
-}
-
-function demarrerSurveillancePressePapiers() {
-    let dernierContenu = "";
-
-    function verifierPressePapiers() {
-        let pressePapiers = St.Clipboard.get_default();
-        pressePapiers.get_text(St.ClipboardType.CLIPBOARD, (clip, contenu) => {
-            if(verifierHistorique(dernierContenu, contenu)) {
-                global.log(`Nouveau contenu détecté dans le presse-papiers : "${contenu}"`);
-                dernierContenu = contenu;
-                ajouterContenuAHistoriqueDuPressePapiers(contenu);
-            } else {
-                global.log(`Le contenu du presse-papiers n'a pas changé depuis ces 5 dernières secondes.`);
-            }
-            
-            Mainloop.timeout_add_seconds(5, verifierPressePapiers);
-        });
-
-        return false; // get_text est visiblement asynchrone, donc si on retourne "true" on dit qu'on veut continuer la boucle toutes les X secondes
-        // mais si get_text n'a pas terminé son travail, ça ne va pas fonctionner correctement.
-    }
-
-    global.log("Démarrage de la boucle de surveillance du presse-papiers.");
-    verifierPressePapiers();
 }
 
 HistoriquePressePapiers.prototype = {
@@ -63,10 +28,6 @@ HistoriquePressePapiers.prototype = {
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
-
-        // Historique fictif pour les tests
-        this.historiquePressePapiers = ["Contenu 1", "Contenu 2", "Bonjour"];
-        this.menuItems = [];
 
         // Création du bouton "effacer tout"
         this.boutonEffacerTout = new PopupMenu.PopupMenuItem("🗑️ Vider tout l'historique");
@@ -95,7 +56,12 @@ HistoriquePressePapiers.prototype = {
         this.sectionHistorique = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(this.sectionHistorique);
 
+        // init
+        this.historiquePressePapiers = [];
+        this.menuItems = [];
+
         this.rechargerHistorique();
+        this.demarrerSurveillancePressePapiers();
     },
 
     on_applet_clicked: function() {
@@ -133,11 +99,71 @@ HistoriquePressePapiers.prototype = {
         global.log(`Nombre d'éléments affichés dans le menu : ${this.menuItems.length}`);
         global.log("=========================================");
     },
+
+    ajouterContenuAHistoriqueDuPressePapiers: function(contenu) {
+        try {
+            // on stocke le contenu complet dans l'historique
+            this.historiquePressePapiers.push(contenu);
+            
+            let contenuAffiche = contenu;
+            if(contenu.length > MAX_TAILLE_CONTENU) {
+                contenuAffiche = contenu.substring(0, MAX_TAILLE_CONTENU - 3) + "...";
+            }
+
+            let item = new PopupMenu.PopupMenuItem(contenuAffiche);
+            item.connect('activate', () => {
+                this.copierDansPressePapiers(contenu);
+                Main.notify(`"${contenuAffiche}" copié dans le presse-papiers.`);
+            });
+            this.sectionHistorique.addMenuItem(item);
+            this.menuItems.push(item);
+            global.log(`"${contenuAffiche}" a été ajouté à l'historique du presse-papiers.`);
+        } catch(ex) {
+            global.log(`Une erreur est survenue lors de l'ajout du contenu à l'historique du presse-papiers : ${ex}`);
+        }
+    },
+
+    verifierHistorique: function(dernierContenu, contenu) {
+        // Vérifier si le contenu donné en argument
+        // est déjà présent dans l'historique ou pas.
+        // S'il est déjà présent, il ne faut pas l'ajouter, masi le faire remonter dans la liste pour qu'il apparaîsse de nouveau en premier, PUIS on retourne TRUE
+        // Sinon s'il n'est pas déjà présent, on l'ajoute et on retourne TRUE
+        // Sinon c'est que le texte est probablement null ou vide, dans ce cas on retourne simplement FALSE.
+    
+        // En attendant que tout ce qui est décrit juste au dessus soit mis en place,
+        // je me base juste sur le "denrierContenu", qui sera retiré plus tard.
+        return contenu && contenu !== dernierContenu;
+    },
+
+    demarrerSurveillancePressePapiers: function() {
+        let dernierContenu = "";
+    
+        const verifierPressePapiers = () => {
+            let pressePapiers = St.Clipboard.get_default();
+            pressePapiers.get_text(St.ClipboardType.CLIPBOARD, (clip, contenu) => {
+                if(this.verifierHistorique(dernierContenu, contenu)) {
+                    global.log(`Nouveau contenu détecté dans le presse-papiers : "${contenu}"`);
+                    dernierContenu = contenu;
+                    this.ajouterContenuAHistoriqueDuPressePapiers(contenu);
+                } else {
+                    global.log(`Le contenu du presse-papiers n'a pas changé depuis ces 5 dernières secondes.`);
+                }
+            });
+            return true; // sans ça la boucle ne boucle pas
+        }
+    
+        global.log("Démarrage de la boucle de surveillance du presse-papiers.");
+        Mainloop.timeout_add_seconds(INTERVALE_VERIFICATION_PRESSE_PAPIERS_EN_SECONDES, verifierPressePapiers);
+    },
+
+    copierDansPressePapiers: function(contenu) {
+        let pressePapiers = St.Clipboard.get_default();
+        pressePapiers.set_text(St.ClipboardType.CLIPBOARD, contenu);
+    }
 };
 
 // ********* MAIN **********
 
 function main(metadata, orientation) {
-    demarrerSurveillancePressePapiers();
     return new HistoriquePressePapiers(orientation);
 }
