@@ -65,7 +65,7 @@ HistoriquePressePapiers.prototype = {
 
         // Ajout des boutons au menu
         this.menu.addMenuItem(this.boutonEffacerTout);
-        if(ENABLE_DEBUG){
+        if(this._preferences.debug_mode){
             this.menu.addMenuItem(this.boutonDebogage);
         }
 
@@ -95,10 +95,10 @@ HistoriquePressePapiers.prototype = {
     _updateDebug: function() {
         // On utilise la valeur dynamique
         if(this._preferences.debug_mode){
-            global.log("Débogage activé");
+            global.log(`Débogage activé (${this._preferences.debug_mode})`);
         } else 
         {
-            global.log("Débogage désactivé");
+            global.log(`Débogage désactivé (${this._preferences.debug_mode})`);
         }
     },
 
@@ -117,7 +117,9 @@ HistoriquePressePapiers.prototype = {
     },
 
     effacerHistorique: function() {
-        global.log("Le presse-papiers a été vidé.");
+        if(this._preferences.debug_mode){
+            global.log("Le presse-papiers a été vidé.");
+        }
 
         // Reset des données puis rafraîchissement de l'ihm
         this.historiquePressePapiers = [];
@@ -141,11 +143,11 @@ HistoriquePressePapiers.prototype = {
             // on stocke le contenu complet dans l'historique
             this.historiquePressePapiers.unshift(contenu);
             
-            let item = this.creerBoutonContenuPressePapiers(contenu);
+            this.creerBoutonContenuPressePapiers(contenu);
             
             this.rechargerHistorique();
         } catch(ex) {
-            global.log(`Une erreur est survenue lors de l'ajout du contenu à l'historique du presse-papiers : ${ex}`);
+            global.logError(`Une erreur est survenue lors de l'ajout du contenu à l'historique du presse-papiers : ${ex}`);
         }
     },
 
@@ -174,17 +176,23 @@ HistoriquePressePapiers.prototype = {
             let pressePapiers = St.Clipboard.get_default();
             pressePapiers.get_text(St.ClipboardType.CLIPBOARD, (clip, contenu) => {
                 if(contenu && contenu !== dernierContenu) {
-                    global.log(`Nouveau contenu détecté dans le presse-papiers : "${contenu}"`);
+                    if(this._preferences.debug_mode){
+                        global.log(`Nouveau contenu détecté dans le presse-papiers : "${contenu}"`);
+                    }
                     dernierContenu = contenu;
                     this.gererContenu(contenu);
                 } else {
-                    global.log(`Le contenu du presse-papiers n'a pas changé depuis ces 5 dernières secondes.`);
+                    if(this._preferences.debug_mode){
+                        global.log(`Le contenu du presse-papiers n'a pas changé depuis ces 5 dernières secondes.`);
+                    }
                 }
             });
             return true; // sans ça la boucle ne boucle pas
         }
     
-        global.log("Démarrage de la boucle de surveillance du presse-papiers.");
+        if(this._preferences.debug_mode){
+            global.log("Démarrage de la boucle de surveillance du presse-papiers.");
+        }
         Mainloop.timeout_add_seconds(INTERVALE_VERIFICATION_PRESSE_PAPIERS_EN_SECONDES, verifierPressePapiers);
     },
 
