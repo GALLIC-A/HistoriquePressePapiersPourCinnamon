@@ -78,7 +78,7 @@ HistoriquePressePapiers.prototype = {
         this.historiquePressePapiers.forEach(contenu => {
             let item = this.creerBoutonContenuPressePapiers(contenu);
             this.sectionHistorique.addMenuItem(item);
-            this.menuItems.push(item);
+            this.menuItems.unshift(item); // unshift au lieu de push pour être raccord avec historiquePressePapiers (qui garde le tableau "à l'envers")
         });
     },
 
@@ -99,13 +99,18 @@ HistoriquePressePapiers.prototype = {
 
     ajouterContenuAHistoriqueDuPressePapiers: function(contenu) {
         try {
+            // on vérifie la taille de l'historique, si elle est dépassée avec le nouvel ajout, on supprime le plus ancien élément
+            if(this.historiquePressePapiers.length >= LIMITE_NOMBRE_ELEMENTS_DANS_HISTORIQUE) {
+                this.historiquePressePapiers.shift();
+            }
+
             // on stocke le contenu complet dans l'historique
-            this.historiquePressePapiers.push(contenu);
+            this.historiquePressePapiers.unshift(contenu);
             
             let item = this.creerBoutonContenuPressePapiers(contenu);
 
             this.sectionHistorique.addMenuItem(item);
-            this.menuItems.push(item);
+            this.rechargerHistorique();
         } catch(ex) {
             global.log(`Une erreur est survenue lors de l'ajout du contenu à l'historique du presse-papiers : ${ex}`);
         }
