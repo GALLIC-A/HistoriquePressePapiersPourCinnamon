@@ -7,11 +7,6 @@ const UUID = "historique-presse-papiers@axaul";
 const AppletDir = imports.ui.appletManager.appletMeta[UUID].path;
 const Settings = imports.ui.settings;
 
-// Variables paramétrables
-const ENABLE_DEBUG = true;
-const LIMITE_NOMBRE_ELEMENTS_DANS_HISTORIQUE = 15;
-const INTERVALE_VERIFICATION_PRESSE_PAPIERS_EN_SECONDES = 5;
-
 // Variables fixes
 const MAX_TAILLE_CONTENU = 100;
 
@@ -26,6 +21,7 @@ HistoriquePressePapiers.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation, panelHeight, instanceId);
 
         this._preferences = {};
+        this._initDefaultSettings();
 
         this.set_applet_icon_path(AppletDir + '/icon.png');
         this.set_applet_tooltip("Ouvrir l'historique du presse-papiers");
@@ -41,9 +37,24 @@ HistoriquePressePapiers.prototype = {
             this.on_settings_changed.bind(this), // callback
             null
         );
+        this.settings.bindProperty(
+            Settings.BindingDirection.IN,
+            "clipboard_history_limit",
+            "clipboard_history_limit",
+            this.on_settings_changed.bind(this),
+            null
+        );
 
-        // Utilise la valeur initiale
-        this._updateDebug();
+        this.settings.bindProperty(
+            Settings.BindingDirection.IN,
+            "poll_interval",
+            "poll_interval",
+            this.on_settings_changed.bind(this),
+            null
+        );
+        this._timeoutId = null;
+
+        // this._updateSettings();
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -89,16 +100,33 @@ HistoriquePressePapiers.prototype = {
     },
 
     on_settings_changed: function() {
-        this._updateDebug()
+        this._updateSettings()
     },
 
-    _updateDebug: function() {
+    _initDefaultSettings: function() {
+        this._preferences.debug_mode = false;
+        this._preferences.clipboard_history_limit = 15;
+        this._preferences.poll_interval = 5;
+        // this._preferences.key_open = jenesaispasàquoiçaressemble;
+    },
+
+    _updateSettings: function() {
         // On utilise la valeur dynamique
         if(this._preferences.debug_mode){
-            global.log(`Débogage activé (${this._preferences.debug_mode})`);
+            global.log(`[PARAMS] Débogage activé : ${this._preferences.debug_mode}`);
+            global.log(`[PARAMS] Limite de l'historique : ${this._preferences.clipboard_history_limit} éléments max.`);
+
+            // On redémarre la surveillance du presse-papiers
+            // Autrement ça ne prend pas en compte la nouvelle valeur de poll_interval !
+            if(this._timeoutId){
+                Mainloop.source_remove(this._timeoutId);
+                this._timeoutId = null;
+            }
+            this.demarrerSurveillancePressePapiers();
+            global.log(`[PARAMS] Fréquence de vérification du presse-papiers : ${this._preferences.poll_interval} secondes`);
         } else 
         {
-            global.log(`Débogage désactivé (${this._preferences.debug_mode})`);
+            global.log(`Débogage désactivé`);
         }
     },
 
@@ -136,7 +164,7 @@ HistoriquePressePapiers.prototype = {
     ajouterContenuAHistoriqueDuPressePapiers: function(contenu) {
         try {
             // on vérifie la taille de l'historique, si elle est dépassée avec le nouvel ajout, on supprime le plus ancien élément
-            if(this.historiquePressePapiers.length >= LIMITE_NOMBRE_ELEMENTS_DANS_HISTORIQUE) {
+            if(this.historiquePressePapiers.length >= this._preferences.clipboard_history_limit) {
                 this.historiquePressePapiers.shift();
             }
 
@@ -183,7 +211,7 @@ HistoriquePressePapiers.prototype = {
                     this.gererContenu(contenu);
                 } else {
                     if(this._preferences.debug_mode){
-                        global.log(`Le contenu du presse-papiers n'a pas changé depuis ces 5 dernières secondes.`);
+                        global.log(`Le contenu du presse-papiers n'a pas changé depuis ces ${this._preferences.poll_interval} dernières secondes.`);
                     }
                 }
             });
@@ -193,7 +221,8 @@ HistoriquePressePapiers.prototype = {
         if(this._preferences.debug_mode){
             global.log("Démarrage de la boucle de surveillance du presse-papiers.");
         }
-        Mainloop.timeout_add_seconds(INTERVALE_VERIFICATION_PRESSE_PAPIERS_EN_SECONDES, verifierPressePapiers);
+
+        this._timeoutId = Mainloop.timeout_add_seconds(this._preferences.poll_interval, verifierPressePapiers);
     },
 
     copierDansPressePapiers: function(contenu) {
