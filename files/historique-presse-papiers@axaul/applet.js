@@ -97,7 +97,6 @@ HistoriquePressePapiers.prototype = {
 
     _onSettingsChanged: function() {
         this._logDebug(`[PARAMS] Changement de paramètres détecté`);
-        this._updateDebugButton();
         this._restartClipboardWatcher();
     },
 
@@ -111,8 +110,6 @@ HistoriquePressePapiers.prototype = {
             Main.notify("Historique vidé et presse-papiers effacé !");
         });
         this.menu.addMenuItem(this.boutonEffacerTout);
-
-        this._updateDebugButton();
 
         // Séparation des boutons du menu avec autres commandes due mnu
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -144,21 +141,6 @@ HistoriquePressePapiers.prototype = {
             Main.notify(`"${contenuAffiche}" copié dans le presse-papiers.`);
         });
         return item;
-    },
-
-    _updateDebugButton: function() {
-        if (this.boutonDebogage) {
-            this.menu.removeMenuItem(this.boutonDebogage);
-            this.boutonDebogage = null;
-        }
-        if(this._preferences.debug_mode){
-            this.boutonDebogage = new PopupMenu.PopupMenuItem("⚙ Débogage")
-            this.boutonDebogage.connect('activate', () => {
-                this._showDebugInfo();
-                Main.notify("Alt+F2, lg pour voir les logs des applets.");
-            });
-            this.menu.addMenuItem(this.boutonDebogage, 1); // 1 = position
-        }
     },
 
     // *****************************
