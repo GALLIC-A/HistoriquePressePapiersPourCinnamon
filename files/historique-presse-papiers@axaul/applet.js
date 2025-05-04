@@ -54,29 +54,39 @@ HistoriquePressePapiers.prototype = {
         );
         this._timeoutId = null;
 
+        this.settings.bindProperty(
+            Settings.BindingDirection.IN,
+            "open_applet_shortcut",
+            "open_applet_shortcut",
+            () => {
+                Main.keybindingManager.addHotKey(
+                    UUID,
+                    this._preferences.open_applet_shortcut,
+                    () => this.menu.toggle()
+                );
+            },
+            null
+        );
+
         // this._updateSettings();
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        // Création du bouton "effacer tout"
         this.boutonEffacerTout = new PopupMenu.PopupMenuItem("🗑️ Vider tout l'historique");
         this.boutonEffacerTout.connect('activate', () => {
             this.effacerHistorique();
             Main.notify("Historique vidé !");
         });
-
-        // [DEV] Création du bouton de débogage
-        this.boutonDebogage = new PopupMenu.PopupMenuItem("⚙ Débogage");
-        this.boutonDebogage.connect('activate', () => {
-            this.afficherDebogage();
-            Main.notify("Alt+F2, lg pour voir les logs des applets.");
-        });
-
-        // Ajout des boutons au menu
         this.menu.addMenuItem(this.boutonEffacerTout);
+
         if(this._preferences.debug_mode){
+            this.boutonDebogage = new PopupMenu.PopupMenuItem("⚙ Débogage");
+            this.boutonDebogage.connect('activate', () => {
+                this.afficherDebogage();
+                Main.notify("Alt+F2, lg pour voir les logs des applets.");
+            });
             this.menu.addMenuItem(this.boutonDebogage);
         }
 
@@ -107,27 +117,31 @@ HistoriquePressePapiers.prototype = {
         this._preferences.debug_mode = false;
         this._preferences.clipboard_history_limit = 15;
         this._preferences.poll_interval = 5;
-        // this._preferences.key_open = jenesaispasàquoiçaressemble;
+        this._preferences.open_applet_shortcut = "<Ctrl><Alt>v";
     },
 
     _updateSettings: function() {
-        // On utilise la valeur dynamique
+        // On redémarre la surveillance du presse-papiers
+        // Autrement ça ne prend pas en compte la nouvelle valeur de poll_interval !
+        this._redemarrerSurveillancePressePapiers();
+
         if(this._preferences.debug_mode){
             global.log(`[PARAMS] Débogage activé : ${this._preferences.debug_mode}`);
             global.log(`[PARAMS] Limite de l'historique : ${this._preferences.clipboard_history_limit} éléments max.`);
-
-            // On redémarre la surveillance du presse-papiers
-            // Autrement ça ne prend pas en compte la nouvelle valeur de poll_interval !
-            if(this._timeoutId){
-                Mainloop.source_remove(this._timeoutId);
-                this._timeoutId = null;
-            }
-            this.demarrerSurveillancePressePapiers();
             global.log(`[PARAMS] Fréquence de vérification du presse-papiers : ${this._preferences.poll_interval} secondes`);
+            global.log(`[PARAMS] Raccourci clavier pour ouvrir l'applet : ${this._preferences.open_applet_shortcut}`);
         } else 
         {
             global.log(`Débogage désactivé`);
         }
+    },
+
+    _redemarrerSurveillancePressePapiers: function() {
+        if(this._timeoutId){
+            Mainloop.source_remove(this._timeoutId);
+            this._timeoutId = null;
+        }
+        this.demarrerSurveillancePressePapiers();
     },
 
     rechargerHistorique: function() {
