@@ -13,7 +13,7 @@
 ```bash
 cp -r chemin/vers/le/projet/HistoriquePressePapiersPourCinnamon/files/historique-presse-papiers@axaul ~/.local/share/cinnamon/applets/
 ```
->⚠️ Remplacez chemin/vers/le/projet/historique-presse-papiers@axaul par le chemin réel du dossier cloné.
+>⚠️ Remplacez chemin/vers/le/projet par le chemin réel du dossier cloné.
 
 3. **Redémarrer Cinnamon** (`Alt + F2`, puis taper `r` et validez) puis ajouter l'applet via le menu des applets Cinnamon (clic doit sur la barre des tâches => Applets).
 
