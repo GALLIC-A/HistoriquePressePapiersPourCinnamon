@@ -168,7 +168,17 @@ HistoriquePressePapiers.prototype = {
         this._logDebug("Le presse-papiers a été vidé.");
         this.historiquePressePapiers = [];
         this._reloadHistorique();
-        this._copyToClipboard(""); // on vide le presse-papiers au passage
+        
+        // on vide le presse-papiers au passage
+        let pressePapiers = St.Clipboard.get_default();
+        pressePapiers.get_text(St.ClipboardType.CLIPBOARD, (clip, contenu) => {
+            if (contenu !== null && contenu !== undefined) {
+                this._copyToClipboard("");
+                this._logDebug("Presse-papiers vidé (contenait du texte).");
+            } else {
+                this._logDebug("Presse-papiers non vidé (contenu non texte).");
+            }
+        });
     },
 
     _addToHistorique: function(contenu) {
