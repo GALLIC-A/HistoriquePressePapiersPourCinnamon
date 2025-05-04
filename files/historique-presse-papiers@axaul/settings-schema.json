@@ -1,0 +1,30 @@
+{
+    "debug_mode": {
+        "type": "switch",
+        "description": "Activer le mode de débogage",
+        "default": false
+    },
+    "clipboard_history_limit": {
+        "type": "spinbutton",
+        "description": "Nombre maximal d'éléments pouvant être stockés dans l'historique du presse-papiers",
+        "step": 5,
+        "default": 15,
+        "min": 1,
+        "max": 100
+    },
+    "poll_interval": {
+        "type": "spinbutton",
+        "description": "Intervalle de vérification du presse-papiers",
+        "units": "secondes",
+        "step": 1,
+        "default": 5,
+        "min": 1,
+        "max": 100
+    },
+    "open_applet_shortcut": {
+        "type": "keybinding",
+        "description": "Ouvrir l'historique du presse-papiers",
+        "default": "<Ctrl><Alt>v",
+        "tooltip": "Enregistrer des raccourcis-clavier pour ouvrir l'historique du presse-papiers."
+    }
+}
