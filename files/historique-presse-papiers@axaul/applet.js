@@ -125,7 +125,7 @@ HistoriquePressePapiers.prototype = {
         });
     },
 
-    _createClipboardMenuItem(contenu) {
+    _createClipboardMenuItem: function(contenu) {
         let contenuAffiche = contenu.length > MAX_TAILLE_CONTENU
             ? contenu.substring(0, MAX_TAILLE_CONTENU - 3) + "..."
             : contenu;
