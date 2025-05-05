@@ -115,12 +115,6 @@ HistoriquePressePapiers.prototype = {
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     },
 
-    _createMenuItem: function(label, callback) {
-        let item = new PopupMenu.PopupMenuItem(label);
-        item.connect('activate', callback);
-        return item;
-    },
-
     _reloadHistorique: function() {
         this.sectionHistorique.removeAll();
         this.menuItems = [];
