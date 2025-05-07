@@ -1,0 +1,7 @@
+{
+    "uuid": "clipboard-history@axaul",
+    "name": "Clipboard history",
+    "description": "Utility to access previously copied text.",
+    "icon": "clipboard-history",
+    "max-instances": 1
+}

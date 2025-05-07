@@ -1,12 +1,20 @@
+// Cinnamon
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const St = imports.gi.St;
 const Mainloop = imports.mainloop;
-
-const UUID = "historique-presse-papiers@axaul";
-const AppletDir = imports.ui.appletManager.appletMeta[UUID].path;
 const Settings = imports.ui.settings;
+
+// Localisation
+const Gettext = imports.gettext;
+const GLib = imports.gi.GLib;
+
+// Configuration de l'applet
+const UUID = "historique-presse-papiers@axaul";
+Gettext.bindtextdomain(UUID, GLib.get_home_dir() + "/.local/share/locale");
+const _ = Gettext.domain(UUID).gettext;
+const AppletDir = imports.ui.appletManager.appletMeta[UUID].path;
 const MAX_TAILLE_CONTENU = 100;
 
 function HistoriquePressePapiers(metadata, orientation, panelHeight, instanceId) {
@@ -32,7 +40,7 @@ HistoriquePressePapiers.prototype = {
         // ****************************************
 
         this.set_applet_icon_path(AppletDir + '/icon.png');
-        this.set_applet_tooltip("Ouvrir l'historique du presse-papiers");
+        this.set_applet_tooltip(_("Open clipboard history"));
 
         // Menu principal
         this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -96,7 +104,7 @@ HistoriquePressePapiers.prototype = {
     },
 
     _onSettingsChanged: function() {
-        this._logDebug(`[PARAMS] Changement de paramètres détecté`);
+        this._logDebug(_("[SETTINGS] Settings change detected"));
         this._restartClipboardWatcher();
     },
 
@@ -104,10 +112,10 @@ HistoriquePressePapiers.prototype = {
     // ** MENU & UI **
     // ***************
     _addStaticMenuItems: function() {
-        this.boutonEffacerTout = new PopupMenu.PopupMenuItem("🗑️ Vider tout l'historique")
+        this.boutonEffacerTout = new PopupMenu.PopupMenuItem(_("🗑️ Clear entire history"));
         this.boutonEffacerTout.connect('activate', () => {
             this._clearHistorique();
-            Main.notify("Historique vidé et presse-papiers effacé !");
+            Main.notify(_("History emptied and clipboard erased!"));
         });
         this.menu.addMenuItem(this.boutonEffacerTout);
 
@@ -132,7 +140,7 @@ HistoriquePressePapiers.prototype = {
         let item = new PopupMenu.PopupMenuItem(contenuAffiche);
         item.connect('activate', () => {
             this._copyToClipboard(contenu);
-            Main.notify(`"${contenuAffiche}" copié dans le presse-papiers.`);
+            Main.notify(_("“%s” copied to clipboard.").format(contenuAffiche));
         });
         return item;
     },
@@ -141,7 +149,7 @@ HistoriquePressePapiers.prototype = {
     // ** GESTION DE L'HISTORIQUE **
     // *****************************
     _clearHistorique: function() {
-        this._logDebug("Le presse-papiers a été vidé.");
+        this._logDebug(_("Clipboard has been emptied."));
         this.historiquePressePapiers = [];
         this._reloadHistorique();
         
@@ -150,9 +158,9 @@ HistoriquePressePapiers.prototype = {
         pressePapiers.get_text(St.ClipboardType.CLIPBOARD, (clip, contenu) => {
             if (contenu !== null && contenu !== undefined) {
                 this._copyToClipboard("");
-                this._logDebug("Presse-papiers vidé (contenait du texte).");
+                this._logDebug(_("Clipboard cleared (it contained text)."));
             } else {
-                this._logDebug("Presse-papiers non vidé (contenu non texte).");
+                this._logDebug(_("Clipboard not cleared (non-text content)."));
             }
         });
     },
@@ -165,7 +173,7 @@ HistoriquePressePapiers.prototype = {
             this.historiquePressePapiers.unshift(contenu);
             this._reloadHistorique();
         } catch(ex) {
-            global.logError(`Une erreur est survenue lors de l'ajout du contenu à l'historique du presse-papiers : ${ex}`);
+            global.logError(_("An error occurred while adding content to clipboard history: %s").format(ex));
         }
     },
 
@@ -195,16 +203,16 @@ HistoriquePressePapiers.prototype = {
             let pressePapiers = St.Clipboard.get_default();
             pressePapiers.get_text(St.ClipboardType.CLIPBOARD, (clip, contenu) => {
                 if(contenu && contenu !== dernierContenu) {
-                    this._logDebug(`Nouveau contenu détecté : ${contenu}`);
+                    this._logDebug(_("New content detected: “%s”").format(contenu));
                     dernierContenu = contenu;
                     this._handleClipboardContent(contenu);
                 } else {
-                    this._logDebug(`Le contenu du presse-papiers n'a pas changé depuis ces ${this._preferences.poll_interval} dernières secondes.`);
+                    this._logDebug(_("The contents of the clipboard have not changed since last %s seconds.").format(this._preferences.poll_interval));
                 }
             });
             return true; // sans ça la boucle ne boucle pas
         }
-        this._logDebug("Démarrage de la surveillance du presse-papiers.");
+        this._logDebug(_("Starting clipboard checking."));
         this._timeoutId = Mainloop.timeout_add_seconds(this._preferences.poll_interval, verifierPressePapiers);
     },
 
@@ -219,20 +227,6 @@ HistoriquePressePapiers.prototype = {
     _copyToClipboard: function(contenu) {
         let pressePapiers = St.Clipboard.get_default();
         pressePapiers.set_text(St.ClipboardType.CLIPBOARD, contenu);
-    },
-    
-    // **************
-    // ** DÉBOGAGE **
-    // **************
-    _showDebugInfo: function() {
-        global.log("===== ⚙ Mode débogage ⚙ =====");
-        global.log(`[PARAMS] Débogage activé : ${this._preferences.debug_mode}`);
-        global.log(`[PARAMS] Limite de l'historique : ${this._preferences.clipboard_history_limit} éléments max.`);
-        global.log(`[PARAMS] Fréquence de vérification du presse-papiers : ${this._preferences.poll_interval} secondes`);
-        global.log(`[PARAMS] Raccourci clavier pour ouvrir l'applet : ${this._preferences.open_applet_shortcut}`);
-        global.log(`[HISTORIQUE] Nombre d'éléments dans l'historique : ${this.historiquePressePapiers.length}`);
-        global.log(`[HISTORIQUE] Nombre d'éléments affichés : ${this.menuItems.length}`);
-        global.log("==============================");
     },
 
     _logDebug: function(msg){
