@@ -6,7 +6,7 @@
     },
     "clipboard_history_limit": {
         "type": "spinbutton",
-        "description": "Maximum number of items that can be stored in the clipboard history",
+        "description": "Maximum number of items that can be stored in the clipboard history.",
         "step": 5,
         "default": 15,
         "min": 1,
@@ -23,7 +23,7 @@
     },
     "open_applet_shortcut": {
         "type": "keybinding",
-        "description": "Open clipboard history",
+        "description": "Open clipboard history with shortcut.",
         "default": "<Ctrl><Alt>v",
         "tooltip": "Save keyboard shortcuts to open the clipboard history."
     }

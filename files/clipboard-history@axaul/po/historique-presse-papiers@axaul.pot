@@ -68,3 +68,35 @@ msgstr ""
 #: applet.js:215
 msgid "Starting clipboard checking."
 msgstr ""
+
+#: clipboard-history@axaul->metadata.json->name
+msgid "Clipboard history"
+msgstr ""
+
+#: clipboard-history@axaul->metadata.json->description
+msgid "Utility to access previously copied text."
+msgstr ""
+
+#: clipboard-history@axaul->settings-schema.json->debug_mode->description
+msgid "Enable debug mode"
+msgstr ""
+
+#: clipboard-history@axaul->settings-schema.json->clipboard_history_limit->description
+msgid "Maximum number of items that can be stored in the clipboard history."
+msgstr ""
+
+#: clipboard-history@axaul->settings-schema.json->poll_interval->description
+msgid "Clipboard check interval"
+msgstr ""
+
+#: clipboard-history@axaul->settings-schema.json->poll_interval->units
+msgid "seconds"
+msgstr ""
+
+#: clipboard-history@axaul->settings-schema.json->open_applet_shortcut->description
+msgid "Open clipboard history with shortcut."
+msgstr ""
+
+#: clipboard-history@axaul->settings-schema.json->open_applet_shortcut->tooltip
+msgid "Save keyboard shortcuts to open the clipboard history."
+msgstr ""

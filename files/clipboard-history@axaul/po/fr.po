@@ -69,3 +69,35 @@ msgstr "Le contenu du presse-papiers n'a pas changé depuis ces %s dernières se
 #: applet.js:215
 msgid "Starting clipboard checking."
 msgstr "Démarrage de la surveillance du presse-papiers."
+
+#: clipboard-history@axaul->metadata.json->name
+msgid "Clipboard history"
+msgstr "Historique du presse-papiers"
+
+#: clipboard-history@axaul->metadata.json->description
+msgid "Utility to access previously copied text."
+msgstr "Utilitaire pour accéder à des éléments anciennement copiés."
+
+#: clipboard-history@axaul->settings-schema.json->debug_mode->description
+msgid "Enable debug mode"
+msgstr "Activer le mode de débogage"
+
+#: clipboard-history@axaul->settings-schema.json->clipboard_history_limit->description
+msgid "Maximum number of items that can be stored in the clipboard history."
+msgstr "Nombre maximal d'éléments pouvant être stockés dans l'historique du presse-papiers."
+
+#: clipboard-history@axaul->settings-schema.json->poll_interval->description
+msgid "Clipboard check interval"
+msgstr "Intervalle de vérification du presse-papiers"
+
+#: clipboard-history@axaul->settings-schema.json->poll_interval->units
+msgid "seconds"
+msgstr "secondes"
+
+#: clipboard-history@axaul->settings-schema.json->open_applet_shortcut->description
+msgid "Open clipboard history with shortcut."
+msgstr "Ouvrir l'historique du presse-papiers à l'aide d'un raccourci clavier."
+
+#: clipboard-history@axaul->settings-schema.json->open_applet_shortcut->tooltip
+msgid "Save keyboard shortcuts to open the clipboard history."
+msgstr "Enregistrer des raccourcis-clavier pour ouvrir l'historique du presse-papiers."
