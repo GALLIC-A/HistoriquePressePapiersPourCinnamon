@@ -11,7 +11,7 @@ const Gettext = imports.gettext;
 const GLib = imports.gi.GLib;
 
 // Configuration de l'applet
-const UUID = "historique-presse-papiers@axaul";
+const UUID = "clipboard-history@axaul";
 Gettext.bindtextdomain(UUID, GLib.get_home_dir() + "/.local/share/locale");
 const _ = Gettext.domain(UUID).gettext;
 const AppletDir = imports.ui.appletManager.appletMeta[UUID].path;
