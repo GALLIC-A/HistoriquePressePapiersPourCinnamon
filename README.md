@@ -1,38 +1,94 @@
+[English Version] | [Version Française](#historique-du-presse-papiers)
+
+# Clipboard History
+
+**Clipboard History** is an applet for the Cinnamon desktop environment. It allows you to view, manage and reuse the most recent items copied to your clipboard.
+
+## Requirements
+
+- **Cinnamon environment** (Linux Mint or any compatible distribution)
+- **Python 3** used only for installation
+
+## Installation
+
+1. **Clone or download this repository** into a directory of your choice.
+
+2. Open a terminal in that directory and run :
+```bash
+python3 install_applet.py
+```
+>⚠️ Make sure Python 3 is installed on your system (`pyton3 --version`)
+
+3. **Restart Cinnamon** by pressing `Alt + F2`, typing `r`, then hitting Enter.
+
+4. **Add the applet to your panel** via the applet menu (righ-click on the panel => Applets => Add)
+
+# Usage
+- **Click the applet icon** to open the menu.
+- **Select an item** from the list to copy it back to the clipboard.
+- **Clear** the history using the dedicated button.
+- **Enable debug mode** to see logs via `Alt + F2`, then type `lg`.
+- **Configure a keyboard shortcut** for quicker access.
+
+# Available Settings
+- **Enable debug mode**: Shows log information in the system journal.
+- **Maximum number of item stored**: Defines the clipboard history size.
+- **Clipboard check interval** (in seconds): Sets how often the clipboard is monitored.
+- **Open clipboard history**: Configure a custom keyboard shortcut to open the applet.
+
+# Limitations
+- A short check interval may slightly affect system performance.
+- History is cleared each time Cinnamon restarts (no persistence).
+- Only plain text is supported (no images or files).
+
+# Author
+- [Axel GALLIC (alias Axaul)](https://github.com/GALLIC-A)
+
+# Licence
+
+This project is licensed under the MIT License. All code, including past commits, is now covered by this license. See the [LICENCE](https://github.com/GALLIC-A/HistoriquePressePapiersPourCinnamon/blob/main/LICENCE) file for more details.
+
+---
+
+[Version Française] | [English Version](#clipboard-history)
+
 # Historique du presse-papiers
 **Historique du presse-papiers** est un applet développé pour Cinnamon et permet de consulter et réutiliser les derniers éléments copiés dans votre presse-papiers.
 
 ## Prérequis
 - **Environnement Cinnamon** (Linux Mint ou toute autre distribution compatible)
-- Aucune dépendance supplémentaire n'est requise.
+- **Python 3** pour l'installation de l'applet uniquement
 
 ## Installation
 
 1. **Télécharger ou cloner ce dépôt Git** dans un répertoire de votre choix.
 
-2. Se placer dans le répertoire où a été téléchargé/cloné le dépôt Git, puis exécuter la commande suivante :
+2. Ouvrez un terminal, placez-vous dans le répertoire où vous avez téléchargé/cloné le dépôt, puis exécutez la commande suivante :
 ```bash
-cp -r chemin/vers/le/projet/HistoriquePressePapiersPourCinnamon/files/historique-presse-papiers@axaul ~/.local/share/cinnamon/applets/
+python3 install_applet.py
 ```
->⚠️ Remplacez chemin/vers/le/projet par le chemin réel du dossier cloné.
+>⚠️ Assurez-vous que Python 3 est installé sur votre système (`pyton3 --version`)
 
-3. **Redémarrer Cinnamon** (`Alt + F2`, puis taper `r` et validez) puis ajouter l'applet via le menu des applets Cinnamon (clic doit sur la barre des tâches => Applets).
+3. **Redémarrer Cinnamon** en appuyant sur `Alt + F2`, en tapant `r` puis en validant.
+
+4. **Ajouter l'applet** à votre panneau via le menu (clic droit sur la barre des tâches => Applets => Ajouter).
 
 # Utilisation
-- **Cliquez sur l'icône** de l'applet (située à droite dans la barre des tâches) pour ouvrir le menu.
-- **Sélectionnez un élément** de l'historique pour le remettre dans votre presse-papiers.
+- **Cliquez sur l'icône** de l'applet pour ouvrir le menu.
+- **Sélectionnez un élément** pour le copier à nouveau dans votre presse-papiers.
 - **Videz l'historique** avec le bouton prévu à cet effet.
-- **Activez le mode de débogage** dans les paramètres pour plus d'informations (visibles dans les logs, via `Alt + F2`, puis tapez lg et validez)
-- **Utilisez le raccourci clavier** configurable pour ouvrir l'applet plus aisément.
+- **Activez le mode de débogage** pour voir les journaux via `Alt + F2`, puis `lg`.
+- **Configurez un raccourci clavier** pour accéder plus rapidement à l'applet.
 
-# paramètres
-- **Activer le mode de débogage** : Affiche les informations de débogage dans les logs.
-- **Nombre maximal d'éléments pouvant être stockés dans l'historique du presse-papiers** : Définit la quantité d'éléments stockés dans l'historique.
-- **Intervalle de vérification du presse-papiers** : Définit la fréquence de surveillance du presse-papiers (en secondes)
+# Paramètres
+- **Activer le mode de débogage** : Affiche les informations de log dans les journaux système.
+- **Nombre maximal d'éléments enregistrés** : Définit la taille maximale de l'historique.
+- **Intervalle de vérification du presse-papiers** (en secondes) : Ajuste la fréquence de surveillance.
 - **Ouvrir l'historique du presse-papiers** : Permet de configurer un raccourci clavier pour ouvrir l'applet.
 
 # Limitations
-- Une fréquence de vérification du presse-papiers peut légèrement impacter les performances du système.
-- L'historique est effacé à chaque redémarrage de Cinnamon (pas de persistance des données).
+- Une fréquence de vérification trop élevée du presse-papiers peut impacter légèrement les performances.
+- L'historique est réinitialisé après un redémarrage de Cinnamon.
 - Seuls les contenus texte sont gérés.
 
 # Auteur
@@ -40,5 +96,4 @@ cp -r chemin/vers/le/projet/HistoriquePressePapiersPourCinnamon/files/historique
 
 # Licence
 
-Copyright (c) 2025 - Axel GALLIC
-Ce projet est distribué sous licence MIT.
+Ce projet est sous licence MIT. Tout le code, y compris les commits passés, est maintenant couvert par cette licence. Consultez le fichier [LICENCE](https://github.com/GALLIC-A/HistoriquePressePapiersPourCinnamon/blob/main/LICENCE) pour plus de détails.
