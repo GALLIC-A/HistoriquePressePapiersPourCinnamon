@@ -17,7 +17,7 @@
 ```bash
 python3 install_applet.py
 ```
->⚠️ Make sure Python 3 is installed on your system (`pyton3 --version`)
+>⚠️ Make sure Python 3 is installed on your system (`python3 --version`)
 
 3. **Restart Cinnamon** by pressing `Alt + F2`, typing `r`, then hitting Enter.
 
@@ -67,7 +67,7 @@ This project is licensed under the MIT License. All code, including past commits
 ```bash
 python3 install_applet.py
 ```
->⚠️ Assurez-vous que Python 3 est installé sur votre système (`pyton3 --version`)
+>⚠️ Assurez-vous que Python 3 est installé sur votre système (`python3 --version`)
 
 3. **Redémarrer Cinnamon** en appuyant sur `Alt + F2`, en tapant `r` puis en validant.
 
